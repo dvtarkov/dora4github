@@ -22,7 +22,7 @@ def calculate_commit_frequency(commits, repo_time):
     recent_deployments = [d for d in deployment_dates if d > last_month]
 
     time = (now - repo_creation_dt).days if last_month < repo_creation_dt else 30
-    deployment_frequency = len(recent_deployments) / time
+    deployment_frequency = len(recent_deployments) / time if time != 0 else 1
 
     return deployment_frequency
 
