@@ -19,6 +19,13 @@ def get_recent_deployments(repo_name, repo_owner, branch, header):
     return recent_deployments
 
 
+def get_repo_creation_time(repo_name, repo_owner, header):
+    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
+    response = requests.get(url, headers=header)
+    repo = response.json()
+    return datetime.strptime(repo['created_at'], '%Y-%m-%dT%H:%M:%SZ')
+
+
 def get_recent_commits(repo_name, repo_owner, branch, header):
     url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/commits?sha={branch}'
     response = requests.get(url, headers=header)

@@ -1,7 +1,7 @@
 from flask import Flask, Response
 from prometheus_client import Gauge, generate_latest
 from utils import get_all_branches, get_recent_deployments, get_recent_commits, get_recent_issues, \
-    get_deployment_statuses, get_pull, get_pull_origin_commits
+    get_deployment_statuses, get_pull, get_pull_origin_commits, get_repo_creation_time
 from datetime import datetime, timedelta
 from config import REPOS
 
@@ -14,13 +14,16 @@ mean_time_to_restore_gauge = Gauge('github_mean_time_to_restore', 'Mean Time to 
 app = Flask(__name__)
 
 
-def calculate_commit_frequency(commits):
-
+def calculate_commit_frequency(commits, repo_time):
+    repo_creation_dt = repo_time
     now = datetime.now()
     last_month = now - timedelta(days=30)
     deployment_dates = [datetime.strptime(c["commit"]['committer']["date"], '%Y-%m-%dT%H:%M:%SZ') for c in commits]
     recent_deployments = [d for d in deployment_dates if d > last_month]
-    deployment_frequency = len(recent_deployments) / 30
+
+    time = (now - repo_creation_dt).days if last_month < repo_creation_dt else 30
+    deployment_frequency = len(recent_deployments) / time
+
     return deployment_frequency
 
 
@@ -72,6 +75,7 @@ def metrics(repo_tag):
         raise Exception("Repo not found")
 
     branches = get_all_branches(repo_name, repo_owner, header)
+    repo_creation_dt = get_repo_creation_time(repo_name, repo_owner, header)
 
     for branch in branches:
         failed_deployments = 0
@@ -89,7 +93,7 @@ def metrics(repo_tag):
             else:
                 lead_times.extend(calculate_lead_time_for_changes(repo_name, repo_owner, deployment, header))
 
-        deployment_frequency = calculate_commit_frequency(commits)
+        deployment_frequency = calculate_commit_frequency(commits, repo_creation_dt)
         lead_time_for_changes = sum(lead_times) / len(lead_times) / 3600 if lead_times else 0
         change_failure_rate = calculate_change_failure_rate(deployments, issues, failed_deployments)
         mean_time_to_restore = calculate_mean_time_to_restore(issues)
