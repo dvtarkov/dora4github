@@ -33,5 +33,5 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ steps.get_tag.outputs.TAG }}
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/dora4github:${{ steps.get_tag.outputs.TAG }}
         # Использование извлеченного тега для тегирования Docker образа

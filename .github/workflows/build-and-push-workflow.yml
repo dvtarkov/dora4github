@@ -31,4 +31,4 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.event.inputs.tag }}
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/dora4github:${{ github.event.inputs.tag }}
